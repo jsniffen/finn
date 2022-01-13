@@ -1,12 +1,12 @@
 TTF_Font *open_font(char *filename, int size)
 {
 	TTF_Font *font;
-	
+
 	font = TTF_OpenFont(filename, size);
 	if (font == 0) {
 		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
 	}
-	
+
 	return font;
 }
 
@@ -27,14 +27,15 @@ SDL_Texture *get_text_texture(SDL_Renderer *renderer, TTF_Font *font, char c, SD
 	if (texture == 0) {
 		fprintf(stderr, "failed to create texture from surface: %s\n", SDL_GetError());
 	}
-	
+
 	SDL_FreeSurface(surface);
 
 	return texture;
 }
 
 
-void render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
+void
+render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 {
 	int w, h;
 	SDL_QueryTexture(texture, 0, 0, &w, &h);
@@ -42,30 +43,13 @@ void render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 	SDL_RenderCopyEx(renderer, texture, 0, &quad, 0, 0, 0);
 }
 
-void render_file(SDL_Renderer *renderer, TTF_Font *font, SDL_RWops *file, int x, int y)
+void
+render_char(SDL_Renderer *r, TTF_Font *f, int *w, int *h, char c, int x, int y)
 {
-	int i, size, w, h;
 	SDL_Texture *texture;
-	char buf[1024];
-	SDL_Color color = {0, 0, 0};
-
-	SDL_RWseek(file, 0, RW_SEEK_SET);
-	
-	size = SDL_RWsize(file);
-	SDL_RWread(file, buf, sizeof(buf), 1);
-
-	for (i = 0; i < size; ++i) {
-		if (buf[i] == '\n') {
-			y += h;
-			x = 0;
-			continue;
-		}
-		
-		texture = get_text_texture(renderer, font, buf[i], color);
-		SDL_QueryTexture(texture, 0, 0, &w, &h);
-		render_text(renderer, texture, x, y);
-		SDL_DestroyTexture(texture);
-
-		x += w;
-	}
+	SDL_Color color = {0, 0, 0, 0};
+	texture = get_text_texture(r, f, c, color);
+	SDL_QueryTexture(texture, 0, 0, w, h);
+	render_text(r, texture, x, y);
+	SDL_DestroyTexture(texture);
 }
