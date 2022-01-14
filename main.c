@@ -57,7 +57,32 @@ main(int argc, char **args)
 			if (e.type == SDL_QUIT) running = false;
 
 			if (e.type == SDL_KEYDOWN) {
-				binsert(&buf, e.key.keysym.sym);
+				switch (e.key.keysym.sym) {
+					case SDLK_UP:
+						bmoveu(&buf);
+						break;
+
+						case SDLK_DOWN:
+							bmoved(&buf);
+							break;
+
+					case SDLK_LEFT:
+						bmovel(&buf);
+						break;
+
+					case SDLK_RIGHT:
+						bmover(&buf);
+						break;
+
+					case SDLK_BACKSPACE:
+						bremove(&buf);
+						break;
+
+					default:
+						binsert(&buf, e.key.keysym.sym);
+						break;
+
+				}
 			}
 		}
 

@@ -78,6 +78,58 @@ int bremove(Buffer *b)
 	return 0;
 }
 
+void
+bmoveu(Buffer *b)
+{
+	// TODO(Julian): Buggy implementation. Fix this...
+	if (b->gap_start <= 0) return;
+
+	int scanl, distl, gap_size, diff;
+	gap_size = b->gap_end - b->gap_start;
+
+	scanl = b->gap_start-1;
+	while (scanl > 0 && b->data[scanl] != '\n') --scanl;
+	distl = b->gap_start-scanl;
+
+	--scanl;
+	while (scanl > 0 && b->data[scanl] != '\n') --scanl;
+
+	if (distl-scanl > 2)  {
+		scanl += distl;
+	} else {
+		scanl -= 2;
+	}
+
+	diff = b->gap_start-scanl;
+	fprintf(stdout, "%d\n", diff);
+
+	memcpy(b->data + scanl + gap_size, b->data + scanl, diff);
+	b->gap_start = scanl;
+	b->gap_end = scanl + gap_size;
+}
+
+void
+bmoved(Buffer *b)
+{
+	return;
+}
+
+void
+bmover(Buffer *b)
+{
+	if (b->gap_end == b->size) return;
+
+	b->data[b->gap_start++] = b->data[b->gap_end++];
+}
+
+void
+bmovel(Buffer *b)
+{
+	if (b->gap_start <= 0) return;
+
+	b->data[--b->gap_start] = b->data[b->gap_end--];
+}
+
 int bmove(Buffer *b, int i)
 {
 	if (i < 0 || i > b->size - INITIAL_GAP_SIZE) {
@@ -112,6 +164,11 @@ int brender(Buffer *b, SDL_Renderer *r, TTF_Font *f)
 	for (i = 0; i < b->size; ++i) {
 		if (i == b->gap_start) {
 			i = b->gap_end-1;
+
+			SDL_Rect rect = {x, y, 2, 30};
+			SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
+			SDL_RenderFillRect(r, &rect);
+
 			continue;
 		}
 
