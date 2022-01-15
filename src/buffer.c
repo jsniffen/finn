@@ -5,11 +5,13 @@ typedef struct Buffer Buffer;
 struct Buffer
 {
 	int size;
-	int gap_start;
-	int gap_end;
+	int gap;
+	int gapsize;
 	char *data;
 	SDL_RWops *file;
 };
+
+void bmovegap(Buffer *b, int i);
 
 int bopen(Buffer *b, char *filename)
 {
@@ -32,10 +34,10 @@ int bopen(Buffer *b, char *filename)
 	b->data = (char *)malloc(b->size);
 	memset(b->data, 0, b->size);
 
-	b->gap_start = 0;
-	b->gap_end = 255;
+	b->gap = 0;
+	b->gapsize = INITIAL_GAP_SIZE;
 
-	read = SDL_RWread(b->file, b->data+b->gap_end, 1, size);
+	read = SDL_RWread(b->file, b->data+b->gapsize, 1, size);
 	if (read < size) {
 		fprintf(stderr, "failed to read the entire file: %s\n", SDL_GetError());
 		return -1;
@@ -47,8 +49,8 @@ int bopen(Buffer *b, char *filename)
 int bclose(Buffer *b)
 {
 	b->size = 0;
-	b->gap_start = 0;
-	b->gap_end = 0;
+	b->gap = 0;
+	b->gapsize = 0;
 	if (SDL_RWclose(b->file) < 0) {
 		fprintf(stderr, "failed to close file: %s\n", SDL_GetError());
 	}
@@ -56,56 +58,34 @@ int bclose(Buffer *b)
 	return 0;
 }
 
-int binsert(Buffer *b, char c)
+void
+binsert(Buffer *b, char c)
 {
-	if (b->gap_end - b->gap_start <= 0) {
+	if (b->gapsize <= 0) {
 		// TODO(Julian): handle resize.
-		return 1;
+		return;
 	}
 
-	b->data[b->gap_start++] = c;
-	return 0;
+	b->data[b->gap++] = c;
+	--b->gapsize;
 }
 
-int bremove(Buffer *b)
+void
+bremove(Buffer *b)
 {
-	if (b->gap_start == 0) {
-		fprintf(stderr, "cannot backspace when the gap_start is 0\n");
-		return 1;
+	if (b->gap == 0) {
+		fprintf(stderr, "cannot backspace when the gap is at 0\n");
+		return;
 	}
 
-	--b->gap_start;
-	return 0;
+	--b->gap;
+	++b->gapsize;
 }
 
 void
 bmoveu(Buffer *b)
 {
-	// TODO(Julian): Buggy implementation. Fix this...
-	if (b->gap_start <= 0) return;
-
-	int scanl, distl, gap_size, diff;
-	gap_size = b->gap_end - b->gap_start;
-
-	scanl = b->gap_start-1;
-	while (scanl > 0 && b->data[scanl] != '\n') --scanl;
-	distl = b->gap_start-scanl;
-
-	--scanl;
-	while (scanl > 0 && b->data[scanl] != '\n') --scanl;
-
-	if (distl-scanl > 2)  {
-		scanl += distl;
-	} else {
-		scanl -= 2;
-	}
-
-	diff = b->gap_start-scanl;
-	fprintf(stdout, "%d\n", diff);
-
-	memcpy(b->data + scanl + gap_size, b->data + scanl, diff);
-	b->gap_start = scanl;
-	b->gap_end = scanl + gap_size;
+	return;
 }
 
 void
@@ -117,37 +97,43 @@ bmoved(Buffer *b)
 void
 bmover(Buffer *b)
 {
-	if (b->gap_end == b->size) return;
-
-	b->data[b->gap_start++] = b->data[b->gap_end++];
+	bmovegap(b, b->gap+1);
 }
 
 void
 bmovel(Buffer *b)
 {
-	if (b->gap_start <= 0) return;
-
-	b->data[--b->gap_start] = b->data[b->gap_end--];
+	bmovegap(b, b->gap-1);
 }
 
-int bmove(Buffer *b, int i)
+void
+bmovegap(Buffer *b, int i)
 {
-	if (i < 0 || i > b->size - INITIAL_GAP_SIZE) {
+	if (i < 0 || i > b->size - b->gapsize) {
 		fprintf(stderr, "invalid gap placement: %d\n", i);
-		return 1;
+		return;
 	}
 
-	if (b->gap_start == i) return 0;
+	if (b->gap == i) return;
 
-	if (b->gap_start < i) {
-		// copy backwards
+	char *dst, *src;
+	int diff;
+
+	src = b->data + i;
+
+	if (i < b->gap) {
+		diff = b->gap - i;
+		dst = src + b->gapsize;
+		memmove(dst, src, diff);
 	} else {
-		// copy forwards
+		diff = i - b->gap;
+		dst = src - b->gapsize;
+
+		//TODO(Julian): There is a bug here...
+		memmove(dst, src, b->gapsize);
 	}
 
-	// TODO(Julian): handle moving gap Buffer.
-
-	return 0;
+	b->gap = i;
 }
 
 int brender(Buffer *b, SDL_Renderer *r, TTF_Font *f)
@@ -162,8 +148,8 @@ int brender(Buffer *b, SDL_Renderer *r, TTF_Font *f)
 	x = 0;
 	y = 0;
 	for (i = 0; i < b->size; ++i) {
-		if (i == b->gap_start) {
-			i = b->gap_end-1;
+		if (i == b->gap) {
+			i = b->gap+b->gapsize-1;
 
 			SDL_Rect rect = {x, y, 2, 30};
 			SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);

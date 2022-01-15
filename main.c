@@ -62,9 +62,9 @@ main(int argc, char **args)
 						bmoveu(&buf);
 						break;
 
-						case SDLK_DOWN:
-							bmoved(&buf);
-							break;
+					case SDLK_DOWN:
+						bmoved(&buf);
+						break;
 
 					case SDLK_LEFT:
 						bmovel(&buf);
