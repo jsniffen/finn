@@ -119,20 +119,17 @@ bmovegap(Buffer *b, int i)
 	char *dst, *src;
 	int diff;
 
-	src = b->data + i;
-
 	if (i < b->gap) {
 		diff = b->gap - i;
+		src = b->data + i;
 		dst = src + b->gapsize;
-		memmove(dst, src, diff);
 	} else {
 		diff = i - b->gap;
-		dst = src - b->gapsize;
-
-		//TODO(Julian): There is a bug here...
-		memmove(dst, src, b->gapsize);
+		dst = b->data + b->gap;
+		src = dst + b->gapsize;
 	}
 
+	memmove(dst, src, diff);
 	b->gap = i;
 }
 
