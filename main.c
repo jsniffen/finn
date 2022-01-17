@@ -46,7 +46,7 @@ main(int argc, char **args)
 	font = open_font(args[1], 24);
 
 	Buffer buf;
-	if (bopen(&buf, "build.bat") == -1) {
+	if (bopen(&buf, "test.txt") == -1) {
 		fprintf(stderr, "failed to create Buffer\n");
 		return 1;
 	}

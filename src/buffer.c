@@ -85,12 +85,38 @@ bremove(Buffer *b)
 void
 bmoveu(Buffer *b)
 {
-	return;
+	int dleft, dprevline;
+
+	dleft = 0;
+	while (dleft < b->gap && b->data[b->gap-dleft-1] != '\n') ++dleft;
+
+	// we are on the first line.
+	if (dleft == b->gap) return;
+
+	dprevline = 0;
+	while (dleft+dprevline+1 < b->gap && b->data[b->gap-dleft-dprevline-2] != '\n') ++dprevline;
+
+	if (dprevline > dleft) {
+		bmovegap(b, b->gap-dprevline-1);
+	} else {
+		bmovegap(b, b->gap-dleft-1);
+	}
 }
 
 void
 bmoved(Buffer *b)
 {
+	// TODO(Julian): Fix buggy implementation.
+	int i, dleft, dright;
+
+	dleft = 0;
+	while (dleft < b->gap && b->data[b->gap-dleft-1] != '\n') ++dleft;
+
+	dright = 0;
+	while (dright < b->size - b->gapsize - b->gap && b->data[b->gap + b->gapsize + dright] != '\n') ++dright;
+
+	bmovegap(b, b->gap+dleft+dright+1);
+
 	return;
 }
 
