@@ -12,6 +12,7 @@ struct Buffer
 };
 
 void bmovegap(Buffer *b, int i);
+void bmovegapxy(Buffer *b, SDL_Renderer *r, TTF_Font *f, int point_x, int point_y);
 
 int bopen(Buffer *b, char *filename)
 {
@@ -130,6 +131,59 @@ void
 bmovel(Buffer *b)
 {
 	bmovegap(b, b->gap-1);
+}
+
+void bmovegapxy(Buffer *b, SDL_Renderer *r, TTF_Font *f, int point_x, int point_y)
+{
+	SDL_Point point = {point_x, point_y};
+
+	int i, size, w, h, x, y;
+	char c;
+	SDL_Texture *texture;
+	SDL_Color color = {0, 0, 0};
+
+	w = 0;
+	h = 0;
+	x = 0;
+	y = 0;
+	for (i = 0; i < b->size; ++i) {
+		if (i == b->gap) {
+			i = b->gap+b->gapsize-1;
+		}
+
+		c = b->data[i];
+
+		if (c == '\n') {
+			y += h;
+			x = 0;
+			continue;
+		}
+
+		render_char(r, f, &w, &h, c, x, y);
+
+		SDL_Rect rect = {x, y, w, h};
+		if (SDL_PointInRect(&point, &rect)) {
+			int new_i = i;
+			if (new_i > b->gap) {
+				new_i -= b->gapsize;
+			}
+
+			float mid = (rect.w/2);
+			if (point.x-rect.x > mid) {
+				++new_i;
+			}
+			// printf("%c, point(%d, %d), rect(%d, %d, %d, %d)\n", c, point.x, point.y, rect.x, rect.y, rect.w, rect.h);
+			// printf("%f, %d\n", mid, point.x-rect.x);
+
+			if (new_i == b->gap) {
+				return;
+			}
+
+			bmovegap(b, new_i);
+		}
+
+		x += w;
+	}
 }
 
 void

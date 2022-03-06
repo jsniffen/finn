@@ -66,6 +66,13 @@ main(int argc, char **args)
 		while (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT) running = false;
 
+			if (e.type == SDL_MOUSEBUTTONDOWN) {
+				int x = e.button.x;
+				int y = e.button.y;
+				bmovegapxy(&buf, renderer, font, x, y);
+				break;
+			}
+
 			if (e.type == SDL_KEYDOWN) {
 				switch (e.key.keysym.sym) {
 					case SDLK_UP:
