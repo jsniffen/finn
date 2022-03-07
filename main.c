@@ -24,6 +24,8 @@ SDL_Surface *surface;
 TTF_Font *font;
 bool running;
 
+static SDL_Rect save_button_rect = {1180, 0, 100, 100};
+
 int
 main(int argc, char **args)
 {
@@ -67,9 +69,15 @@ main(int argc, char **args)
 			if (e.type == SDL_QUIT) running = false;
 
 			if (e.type == SDL_MOUSEBUTTONDOWN) {
-				int x = e.button.x;
-				int y = e.button.y;
-				bmovegapxy(&buf, renderer, font, x, y);
+				SDL_Point p = {e.button.x, e.button.y};
+
+				bmovegapxy(&buf, renderer, font, p.x, p.y);
+
+				// handle save button
+				if (SDL_PointInRect(&p, &save_button_rect)) {
+					bwrite(&buf);
+				}
+
 				break;
 			}
 
@@ -107,6 +115,11 @@ main(int argc, char **args)
 		SDL_RenderClear(renderer);
 
 		brender(&buf, renderer, font);
+
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		SDL_RenderFillRect(renderer, &save_button_rect);
+
+		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 
 		SDL_RenderPresent(renderer);
 	}

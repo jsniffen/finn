@@ -9,23 +9,30 @@ struct Buffer
 	int gapsize;
 	char *data;
 	SDL_RWops *file;
+
+	char *filename;
 };
 
 void bmovegap(Buffer *b, int i);
 void bmovegapxy(Buffer *b, SDL_Renderer *r, TTF_Font *f, int point_x, int point_y);
 
+// TODO(Julian): fix error handling and file cleanup.
 int bopen(Buffer *b, char *filename)
 {
 	int64_t size;
 	size_t read;
 
-	b->file = SDL_RWFromFile(filename, "r+b");
-	if (b->file == 0) {
+	SDL_RWops *file = NULL;
+
+	b->filename = filename;
+
+	file = SDL_RWFromFile(filename, "r+b");
+	if (file == 0) {
 		fprintf(stderr, "failed to open file: %s\n", SDL_GetError());
 		return -1;
 	}
 
-	size = SDL_RWsize(b->file);
+	size = SDL_RWsize(file);
 	if (size == -1) {
 		fprintf(stderr, "failed to get file size: %s\n", SDL_GetError());
 		return -1;
@@ -38,12 +45,13 @@ int bopen(Buffer *b, char *filename)
 	b->gap = 0;
 	b->gapsize = INITIAL_GAP_SIZE;
 
-	read = SDL_RWread(b->file, b->data+b->gapsize, 1, size);
+	read = SDL_RWread(file, b->data+b->gapsize, 1, size);
 	if (read < size) {
 		fprintf(stderr, "failed to read the entire file: %s\n", SDL_GetError());
 		return -1;
 	}
 
+	SDL_RWclose(file);
 	return 0;
 }
 
@@ -52,11 +60,27 @@ int bclose(Buffer *b)
 	b->size = 0;
 	b->gap = 0;
 	b->gapsize = 0;
-	if (SDL_RWclose(b->file) < 0) {
-		fprintf(stderr, "failed to close file: %s\n", SDL_GetError());
-	}
 	free(b->data);
 	return 0;
+}
+
+void bwrite(Buffer *b)
+{
+	SDL_RWops *newfile = SDL_RWFromFile(b->filename, "w+b");
+	if (newfile) {
+		const int lsize = b->gap;
+		const int rsize = b->size - lsize - b->gapsize;
+
+		const char *lptr = b->data;
+		const char *rptr = b->data + lsize + b->gapsize;
+
+		SDL_RWwrite(newfile, lptr, lsize, 1);
+		SDL_RWwrite(newfile, rptr, rsize, 1);
+
+		SDL_RWclose(newfile);
+	} else {
+		fprintf(stderr, "Error opening newfile\n");
+	}
 }
 
 void
