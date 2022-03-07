@@ -116,7 +116,11 @@ main(int argc, char **args)
 
 		brender(&buf, renderer, font);
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		if (buf.dirty) {
+			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+		} else {
+			SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		}
 		SDL_RenderFillRect(renderer, &save_button_rect);
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);

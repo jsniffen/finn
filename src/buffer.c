@@ -4,6 +4,7 @@ typedef struct Buffer Buffer;
 
 struct Buffer
 {
+	bool dirty;
 	int size;
 	int gap;
 	int gapsize;
@@ -42,6 +43,7 @@ int bopen(Buffer *b, char *filename)
 	b->data = (char *)malloc(b->size);
 	memset(b->data, 0, b->size);
 
+	b->dirty = false;
 	b->gap = 0;
 	b->gapsize = INITIAL_GAP_SIZE;
 
@@ -78,6 +80,8 @@ void bwrite(Buffer *b)
 		SDL_RWwrite(newfile, rptr, rsize, 1);
 
 		SDL_RWclose(newfile);
+
+		b->dirty = false;
 	} else {
 		fprintf(stderr, "Error opening newfile\n");
 	}
@@ -86,6 +90,8 @@ void bwrite(Buffer *b)
 void
 binsert(Buffer *b, char c)
 {
+	b->dirty = true;
+
 	if (b->gapsize <= 0) {
 		// TODO(Julian): handle resize.
 		return;
@@ -98,6 +104,8 @@ binsert(Buffer *b, char c)
 void
 bremove(Buffer *b)
 {
+	b->dirty = true;
+
 	if (b->gap == 0) {
 		fprintf(stderr, "cannot backspace when the gap is at 0\n");
 		return;
