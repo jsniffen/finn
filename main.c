@@ -63,51 +63,59 @@ main(int argc, char **args)
 		return 1;
 	}
 
+
+	SDL_StartTextInput();
+
 	running = true;
 	while (running) {
 		while (SDL_PollEvent(&e)) {
-			if (e.type == SDL_QUIT) running = false;
+			switch (e.type) {
+				case SDL_QUIT: {
+			      		running = false;
+			       	} break;
 
-			if (e.type == SDL_MOUSEBUTTONDOWN) {
-				SDL_Point p = {e.button.x, e.button.y};
+				case SDL_MOUSEBUTTONDOWN: {
+					SDL_Point p = {e.button.x, e.button.y};
 
-				bmovegapxy(&buf, renderer, font, p.x, p.y);
+					bmovegapxy(&buf, renderer, font, p.x, p.y);
 
-				// handle save button
-				if (SDL_PointInRect(&p, &save_button_rect)) {
-					bwrite(&buf);
-				}
+					// handle save button
+					if (SDL_PointInRect(&p, &save_button_rect)) {
+						bwrite(&buf);
+					}
+			       	} break;
 
-				break;
-			}
+				case SDL_TEXTINPUT: {
+					binserttext(&buf, e.text.text);
+			    	} break;
 
-			if (e.type == SDL_KEYDOWN) {
-				switch (e.key.keysym.sym) {
-					case SDLK_UP:
-						bmoveu(&buf);
-						break;
+				case SDL_KEYDOWN: {
+					switch (e.key.keysym.sym) {
+						case SDLK_UP:
+							bmoveu(&buf);
+							break;
 
-					case SDLK_DOWN:
-						bmoved(&buf);
-						break;
+						case SDLK_DOWN:
+							bmoved(&buf);
+							break;
 
-					case SDLK_LEFT:
-						bmovel(&buf);
-						break;
+						case SDLK_LEFT:
+							bmovel(&buf);
+							break;
 
-					case SDLK_RIGHT:
-						bmover(&buf);
-						break;
+						case SDLK_RIGHT:
+							bmover(&buf);
+							break;
 
-					case SDLK_BACKSPACE:
-						bremove(&buf);
-						break;
+						case SDLK_BACKSPACE:
+							bremove(&buf);
+							break;
 
-					default:
-						binsert(&buf, e.key.keysym.sym);
-						break;
-
-				}
+						case SDLK_RETURN:
+							binsert(&buf, '\n');
+							break;
+					}
+				} break;
 			}
 		}
 

@@ -87,8 +87,7 @@ void bwrite(Buffer *b)
 	}
 }
 
-void
-binsert(Buffer *b, char c)
+void binsert(Buffer *b, char c)
 {
 	b->dirty = true;
 
@@ -99,6 +98,15 @@ binsert(Buffer *b, char c)
 
 	b->data[b->gap++] = c;
 	--b->gapsize;
+}
+
+void binserttext(Buffer *b, char *text)
+{
+	// TODO(Julian): handle: resize
+	char c;
+	while ((c = *text++) != '\0') {
+		binsert(b, c);
+	}
 }
 
 void
