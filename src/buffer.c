@@ -209,7 +209,35 @@ int brender(Buffer *b, SDL_Renderer *r)
 	SDL_Texture *texture;
 	SDL_Color color = {0, 0, 0};
 
+	SDL_Point mouse = {mousex, mousey};
+
 	w = h = x = y = 0;
+
+	int font_height = get_font_height();
+
+	SDL_Rect save_button_rect = {x, y, font_height, font_height};
+
+	if (SDL_PointInRect(&mouse, &save_button_rect) && state & SDL_BUTTON_LMASK) {
+		bwrite(b);
+	}
+
+	if (b->dirty) {
+		SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
+	} else {
+		SDL_SetRenderDrawColor(r, 0, 0, 255, 255);
+	}
+	SDL_RenderFillRect(r, &save_button_rect);
+	x += font_height;
+
+	char *filename = b->filename;
+	while ((c = *filename++) != '\0') {
+		SDL_Color color = {0, 0, 0};
+		render_char(r, &w, &h, c, x, y, color);
+		x += w;
+	}
+	x = 0;
+
+	y = font_height;
 	for (i = 0; i < b->size; ++i) {
 		if (i == b->gap) {
 			i = b->gap+b->gapsize-1;
@@ -233,7 +261,6 @@ int brender(Buffer *b, SDL_Renderer *r)
 
 		SDL_Color color = {0, 0, 0, 0};
 		SDL_Rect rect = {x, y, w, h};
-		SDL_Point mouse = {mousex, mousey};
 
 		if (SDL_PointInRect(&mouse, &rect) && state & SDL_BUTTON_LMASK) {
 			color.r = 255;

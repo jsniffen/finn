@@ -26,8 +26,6 @@ SDL_Texture *texture;
 SDL_Surface *surface;
 bool running;
 
-static SDL_Rect save_button_rect = {1180, 0, 100, 100};
-
 int
 main(int argc, char **args)
 {
@@ -79,14 +77,6 @@ main(int argc, char **args)
 			      		running = false;
 			       	} break;
 
-				case SDL_MOUSEBUTTONDOWN: {
-					SDL_Point p = {e.button.x, e.button.y};
-
-					if (SDL_PointInRect(&p, &save_button_rect)) {
-						bwrite(&buf);
-					}
-				} break;
-
 				case SDL_TEXTINPUT: {
 					binserttext(&buf, e.text.text);
 			    	} break;
@@ -125,15 +115,6 @@ main(int argc, char **args)
 		SDL_RenderClear(renderer);
 
 		brender(&buf, renderer);
-
-		if (buf.dirty) {
-			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-		} else {
-			SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-		}
-		SDL_RenderFillRect(renderer, &save_button_rect);
-
-		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 
 		SDL_RenderPresent(renderer);
 	}
