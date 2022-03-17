@@ -1,16 +1,35 @@
-TTF_Font *open_font(char *filename, int size)
+static TTF_Font *font = NULL;
+static int font_height = 0;
+
+bool open_font(char *filename, int size)
 {
-	TTF_Font *font;
-
 	font = TTF_OpenFont(filename, size);
-	if (font == 0) {
-		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
+	if (font == NULL) {
+		return false;
 	}
-
-	return font;
+	font_height = TTF_FontHeight(font);
+	return true;
 }
 
-SDL_Texture *get_text_texture(SDL_Renderer *renderer, TTF_Font *font, char c, SDL_Color color)
+bool get_rune_size(Uint16 rune, int *width, int *height)
+{
+	int minx, miny, maxx, maxy, advance;
+
+	if (font == NULL) {
+		return false;
+	}
+
+	if (TTF_GlyphMetrics(font, rune, &minx, &maxx, &miny, &maxy, &advance) == -1) {
+		return false;
+	}
+
+	*width = advance;
+	*height = font_height;
+
+	return true;
+}
+
+SDL_Texture *get_text_texture(SDL_Renderer *renderer, char c, SDL_Color color)
 {
 	SDL_Texture *texture;
 	SDL_Surface *surface;
@@ -44,11 +63,10 @@ render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 }
 
 void
-render_char(SDL_Renderer *r, TTF_Font *f, int *w, int *h, char c, int x, int y)
+render_char(SDL_Renderer *r, int *w, int *h, char c, int x, int y, SDL_Color color)
 {
 	SDL_Texture *texture;
-	SDL_Color color = {0, 0, 0, 0};
-	texture = get_text_texture(r, f, c, color);
+	texture = get_text_texture(r, c, color);
 	SDL_QueryTexture(texture, 0, 0, w, h);
 	render_text(r, texture, x, y);
 	SDL_DestroyTexture(texture);

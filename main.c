@@ -1,3 +1,5 @@
+#define SDL_ASSERT_LEVEL 2
+
 #ifdef __linux__
 
 #include <SDL2/SDL.h>
@@ -16,12 +18,12 @@
 #include "src/text.c"
 #include "src/buffer.c"
 
+
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Event e;
 SDL_Texture *texture;
 SDL_Surface *surface;
-TTF_Font *font;
 bool running;
 
 static SDL_Rect save_button_rect = {1180, 0, 100, 100};
@@ -55,7 +57,10 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	font = open_font(args[1], 24);
+	if (!open_font(args[1], 32)) {
+		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
+		return 1;
+	}
 
 	Buffer buf;
 	if (bopen(&buf, "test.txt") == -1) {
@@ -77,13 +82,10 @@ main(int argc, char **args)
 				case SDL_MOUSEBUTTONDOWN: {
 					SDL_Point p = {e.button.x, e.button.y};
 
-					bmovegapxy(&buf, renderer, font, p.x, p.y);
-
-					// handle save button
 					if (SDL_PointInRect(&p, &save_button_rect)) {
 						bwrite(&buf);
 					}
-			       	} break;
+				} break;
 
 				case SDL_TEXTINPUT: {
 					binserttext(&buf, e.text.text);
@@ -122,7 +124,7 @@ main(int argc, char **args)
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 
-		brender(&buf, renderer, font);
+		brender(&buf, renderer);
 
 		if (buf.dirty) {
 			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
