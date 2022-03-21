@@ -2,8 +2,8 @@
 
 #ifdef __linux__
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 
 #else
 
@@ -65,7 +65,6 @@ main(int argc, char **args)
 		fprintf(stderr, "failed to create Buffer\n");
 		return 1;
 	}
-
 
 	SDL_StartTextInput();
 

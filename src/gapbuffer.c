@@ -11,9 +11,9 @@ typedef struct
 void gb_create(GapBuffer *gb, uint8_t *data, uint64_t size)
 {
 	// TODO(Julian): handle error
-	b->data = (uint8_t *)malloc(size + INITIAL_GAP_SIZE);
-	memset(b->data, 0, INITIAL_GAP_SIZE);
-	memcpy(b->data + INITIAL_GAP_SIZE, data, size);
+	gb->data = (uint8_t *)malloc(size + INITIAL_GAP_SIZE);
+	memset(gb->data, 0, INITIAL_GAP_SIZE);
+	memcpy(gb->data + INITIAL_GAP_SIZE, data, size);
 
 	gb->gap = 0;
 	gb->gapsize = INITIAL_GAP_SIZE;
@@ -34,35 +34,34 @@ void gb_delete(GapBuffer *gb)
 void gb_insert(GapBuffer *gb, uint8_t rune)
 {
 	// TODO(Julian): handle resize.
-	SDL_assert(b->gapsize > 1);
+	SDL_assert(gb->gapsize > 1);
 
-	b->data[b->gap++] = rune;
-	--b->gapsize;
+	gb->data[gb->gap++] = rune;
+	--gb->gapsize;
 }
 
 void gb_movegap(GapBuffer *gb, uint64_t gap)
 {
-	if (gap < 0 || gap > b->size - b->gapsize) {
-		fprintf(stderr, "invalid gap placement: %d\n", i);
+	if (gap < 0 || gap > gb->size - gb->gapsize) {
+		fprintf(stderr, "invalid gap placement: %d\n", gap);
 		return;
 	}
 
-	if (b->gap == gap) return;
+	if (gb->gap == gap) return;
 
 	uint8_t *dst, *src;
 	int32_t diff;
 
-	if (gap < b->gap) {
-		diff = b->gap - gap;
-		src = b->data + gap;
-		dst = src + b->gapsize;
+	if (gap < gb->gap) {
+		diff = gb->gap - gap;
+		src = gb->data + gap;
+		dst = src + gb->gapsize;
 	} else {
-		diff = gap - b->gap;
-		dst = b->data + b->gap;
-		src = dst + b->gapsize;
+		diff = gap - gb->gap;
+		dst = gb->data + gb->gap;
+		src = dst + gb->gapsize;
 	}
 
 	memmove(dst, src, diff);
-	b->gap = gap;
+	gb->gap = gap;
 }
-
