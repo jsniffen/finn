@@ -18,6 +18,7 @@
 #include "src/text.c"
 #include "src/gapbuffer.c"
 #include "src/buffer.c"
+#include "src/window.c"
 
 
 SDL_Window *window;
@@ -66,6 +67,9 @@ main(int argc, char **args)
 		fprintf(stderr, "failed to create Buffer\n");
 		return 1;
 	}
+
+	Window win;
+	win_open(&win, "test.txt");
 
 	GapBuffer gb;
 	gb_create(&gb, (uint8_t *)"hello, world", 12);
@@ -121,7 +125,8 @@ main(int argc, char **args)
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 
-		gb_render(&gb, renderer, rect, bg, fg);
+		// gb_render(&gb, renderer, rect, bg, fg);
+		win_render(&win, renderer, rect, bg, fg);
 
 		SDL_RenderPresent(renderer);
 	}
