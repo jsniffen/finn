@@ -17,7 +17,7 @@ void gb_create(GapBuffer *gb, uint8_t *data, uint64_t size)
 
 	gb->gap = 0;
 	gb->gapsize = INITIAL_GAP_SIZE;
-	gb->size = size;
+	gb->size = size + INITIAL_GAP_SIZE;
 }
 
 void gb_delete(GapBuffer *gb)
@@ -64,4 +64,37 @@ void gb_movegap(GapBuffer *gb, uint64_t gap)
 
 	memmove(dst, src, diff);
 	gb->gap = gap;
+}
+
+void gb_render(GapBuffer *gb, SDL_Renderer *r, SDL_Rect pos, SDL_Color bg, SDL_Color fg)
+{
+	SDL_SetRenderDrawColor(r, bg.r, bg.g, bg.b, bg.a);
+	SDL_RenderFillRect(r, &pos);
+
+	int i, size, w, h, x, y;
+	char rune;
+
+	x = pos.x;
+	y = pos.y;
+
+	for (i = 0; i < gb->size; ++i) {
+		if (i == gb->gap) {
+			i += gb->gapsize-1;
+			continue;
+		}
+
+		rune = gb->data[i];
+
+		if (rune == '\n') {
+			y += h;
+			x = pos.x;
+			continue;
+		}
+
+		if (x >= pos.x && x < pos.x + pos.w && y >= pos.y && y < pos.y + pos.h) {
+			render_char(r, &w, &h, rune, x, y, fg);
+		}
+
+		x += w;
+	}
 }

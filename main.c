@@ -16,6 +16,7 @@
 #include <stdbool.h>
 
 #include "src/text.c"
+#include "src/gapbuffer.c"
 #include "src/buffer.c"
 
 
@@ -66,7 +67,14 @@ main(int argc, char **args)
 		return 1;
 	}
 
+	GapBuffer gb;
+	gb_create(&gb, (uint8_t *)"hello, world", 12);
+
 	SDL_StartTextInput();
+
+	SDL_Rect rect = {10, 10, 100, 100};
+	SDL_Color bg = {0, 0, 0, 255};
+	SDL_Color fg = {0, 255, 0, 255};
 
 	running = true;
 	while (running) {
@@ -113,7 +121,7 @@ main(int argc, char **args)
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 
-		brender(&buf, renderer);
+		gb_render(&gb, renderer, rect, bg, fg);
 
 		SDL_RenderPresent(renderer);
 	}
