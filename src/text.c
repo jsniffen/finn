@@ -1,5 +1,11 @@
 static TTF_Font *font = NULL;
 static int font_height = 0;
+static int font_width = 0;
+
+int get_font_width()
+{
+	return font_width;
+}
 
 int get_font_height()
 {
@@ -13,6 +19,7 @@ bool open_font(char *filename, int size)
 		return false;
 	}
 	font_height = TTF_FontHeight(font);
+	font_width = size;
 	return true;
 }
 

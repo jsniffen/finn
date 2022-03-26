@@ -57,7 +57,7 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	if (!open_font(args[1], 32)) {
+	if (!open_font(args[1], 24)) {
 		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
 		return 1;
 	}
