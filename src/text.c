@@ -57,9 +57,22 @@ SDL_Texture *get_text_texture(SDL_Renderer *renderer, char c, SDL_Color color)
 	return texture;
 }
 
+void render_cursor(SDL_Renderer *r, int x, int y)
+{
+	int height = font_height-4;
 
-void
-render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
+	SDL_Rect tbox = {x-1, y+4, 4, 4};
+	SDL_RenderFillRect(r, &tbox);
+
+	SDL_Rect bbox = {x-1, y+height, 4, 4};
+	SDL_RenderFillRect(r, &bbox);
+
+	SDL_Rect quad = {x, y+4, 2, height};
+	SDL_RenderFillRect(r, &quad);
+}
+
+
+void render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 {
 	int w, h;
 	SDL_QueryTexture(texture, 0, 0, &w, &h);
@@ -67,8 +80,7 @@ render_text(SDL_Renderer *renderer, SDL_Texture *texture, int x, int y)
 	SDL_RenderCopyEx(renderer, texture, 0, &quad, 0, 0, 0);
 }
 
-void
-render_char(SDL_Renderer *r, int *w, int *h, char c, int x, int y, SDL_Color color)
+void render_char(SDL_Renderer *r, int *w, int *h, char c, int x, int y, SDL_Color color)
 {
 	SDL_Texture *texture;
 	texture = get_text_texture(r, c, color);

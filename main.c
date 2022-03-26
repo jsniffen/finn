@@ -57,7 +57,7 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	if (!open_font(args[1], 24)) {
+	if (!open_font(args[1], 32)) {
 		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -70,13 +70,10 @@ main(int argc, char **args)
 
 	Window win;
 	win_open(&win, "test.txt");
-
-	GapBuffer gb;
-	gb_create(&gb, (uint8_t *)"hello, world", 12);
+	SDL_Rect rect = {0, 0, 1280, 720};
 
 	SDL_StartTextInput();
 
-	SDL_Rect rect = {0, 0, 1280, 720};
 
 	running = true;
 	while (running) {
