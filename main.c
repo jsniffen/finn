@@ -57,7 +57,7 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	if (!open_font(args[1], 32)) {
+	if (!open_font(args[1], 24)) {
 		fprintf(stderr, "failed to open font: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -76,9 +76,7 @@ main(int argc, char **args)
 
 	SDL_StartTextInput();
 
-	SDL_Rect rect = {10, 10, 100, 100};
-	SDL_Color bg = {0, 0, 0, 255};
-	SDL_Color fg = {0, 255, 0, 255};
+	SDL_Rect rect = {0, 0, 1280, 720};
 
 	running = true;
 	while (running) {
@@ -125,8 +123,7 @@ main(int argc, char **args)
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 
-		// gb_render(&gb, renderer, rect, bg, fg);
-		win_render(&win, renderer, rect, bg, fg);
+		win_render(&win, renderer, rect);
 
 		SDL_RenderPresent(renderer);
 	}

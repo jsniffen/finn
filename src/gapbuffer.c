@@ -43,7 +43,7 @@ void gb_insert(GapBuffer *gb, uint8_t rune)
 void gb_movegap(GapBuffer *gb, uint64_t gap)
 {
 	if (gap < 0 || gap > gb->size - gb->gapsize) {
-		fprintf(stderr, "invalid gap placement: %d\n", gap);
+		fprintf(stderr, "invalid gap placement: %lld\n", gap);
 		return;
 	}
 
@@ -66,10 +66,8 @@ void gb_movegap(GapBuffer *gb, uint64_t gap)
 	gb->gap = gap;
 }
 
-void gb_render(GapBuffer *gb, SDL_Renderer *r, SDL_Rect pos, SDL_Color bg, SDL_Color fg)
+void gb_render(GapBuffer *gb, SDL_Renderer *r, SDL_Rect pos, SDL_Color fg)
 {
-	SDL_SetRenderDrawColor(r, bg.r, bg.g, bg.b, bg.a);
-	SDL_RenderFillRect(r, &pos);
 
 	int i, size, w, h, x, y;
 	char rune;

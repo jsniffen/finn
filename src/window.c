@@ -1,12 +1,12 @@
 typedef struct {
-	GapBuffer filename;
-	GapBuffer contents;
+	GapBuffer tag;
+	GapBuffer content;
 } Window;
 
 void win_open(Window *w, uint8_t *filename)
 {
 
-	gb_create(&w->filename, filename, strlen(filename));
+	gb_create(&w->tag, filename, strlen(filename));
 
 	int64_t size;
 	size_t read;
@@ -32,16 +32,40 @@ void win_open(Window *w, uint8_t *filename)
 		return;
 	}
 
-	gb_create(&w->contents, buffer, size);
+	gb_create(&w->content, buffer, size);
 
 	SDL_RWclose(file);
 	free(buffer);
 }
 
-void win_render(Window *win, SDL_Renderer *r, SDL_Rect pos, SDL_Color bg, SDL_Color fg)
+void win_render(Window *win, SDL_Renderer *r, SDL_Rect pos)
 {
-	SDL_Rect title = {10, 10, 100, 100};
-	SDL_Rect contents = {10, 100, 1000, 1000};
-	gb_render(&win->filename, r, title, bg, fg);
-	gb_render(&win->contents, r, contents, bg, fg);
+	uint64_t font_height = get_font_height();
+	SDL_Color fg = {0, 0, 0, 255};
+
+	// render the tag
+	SDL_Rect rect_tag = {pos.x, pos.y, pos.w, font_height};
+
+	SDL_SetRenderDrawColor(r, 234, 255, 255, 255);
+	SDL_RenderFillRect(r, &rect_tag);
+
+	SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
+	SDL_RenderDrawRect(r, &rect_tag);
+
+	rect_tag.x += 5;
+
+	gb_render(&win->tag, r, rect_tag, fg);
+
+	// render the content
+	SDL_Rect rect_content = {pos.x, pos.y+font_height-1, pos.w, pos.h};
+
+	SDL_SetRenderDrawColor(r, 255, 255, 234, 255);
+	SDL_RenderFillRect(r, &rect_content);
+
+	SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
+	SDL_RenderDrawRect(r, &rect_content);
+
+	rect_content.x += 5;
+
+	gb_render(&win->content, r, rect_content, fg);
 }
