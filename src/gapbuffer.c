@@ -66,12 +66,8 @@ void gb_movegap(GapBuffer *gb, uint64_t gap)
 	gb->gap = gap;
 }
 
-void gb_render(GapBuffer *gb, SDL_Renderer *r, SDL_Rect pos, SDL_Color fg)
+void gb_render(GapBuffer *gb, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos, SDL_Color fg)
 {
-	int mousex, mousey;
-	int state = SDL_GetMouseState(&mousex, &mousey);
-	SDL_Point mouse = {mousex, mousey};
-
 	int i, size, w, h, x, y;
 	char rune;
 
@@ -99,12 +95,12 @@ void gb_render(GapBuffer *gb, SDL_Renderer *r, SDL_Rect pos, SDL_Color fg)
 		SDL_Color color = {0, 0, 0, 0};
 		SDL_Rect rect = {x, y, w, h};
 
-		if (SDL_PointInRect(&mouse, &rect) && state & SDL_BUTTON_LMASK) {
+		if (SDL_PointInRect(&mouse.position, &rect) && lclick(mouse)) {
 			color.r = 255;
 
 			int gap = i;
 
-			if (mousex-x > w/2) {
+			if (mouse.position.x-x > w/2) {
 				gap += 1;
 			}
 

@@ -15,6 +15,23 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+typedef struct
+{
+	bool was_pressed;
+	bool pressed;
+} input_state;
+
+typedef struct
+{
+	SDL_Point position;
+	input_state buttons[2];
+} MouseInput;
+
+bool lclick(MouseInput mouse) {
+	return mouse.buttons[0].was_pressed == false
+		&& mouse.buttons[0].pressed == true;
+}
+
 #include "src/text.c"
 #include "src/gapbuffer.c"
 #include "src/buffer.c"
@@ -26,7 +43,38 @@ SDL_Renderer *renderer;
 SDL_Event e;
 SDL_Texture *texture;
 SDL_Surface *surface;
+static MouseInput mouse;
 bool running;
+
+void update_mouse()
+{
+	int state = SDL_GetMouseState(&mouse.position.x, &mouse.position.y);
+	mouse.buttons[0].was_pressed = mouse.buttons[0].pressed;
+	mouse.buttons[0].pressed = state & SDL_BUTTON_LMASK;
+	mouse.buttons[1].was_pressed = mouse.buttons[1].pressed;
+	mouse.buttons[1].pressed = state & SDL_BUTTON_RMASK;
+}
+
+
+void handle_events()
+{
+	while (SDL_PollEvent(&e)) {
+		switch (e.type) {
+			case SDL_QUIT: {
+				running = false;
+			} break;
+
+#if 0
+			case SDL_MOUSEMOTION:
+			case SDL_MOUSEBUTTONDOWN:
+			case SDL_MOUSEBUTTONUP: {
+				update_mouse();
+			} break;
+#endif
+
+		}
+	}
+}
 
 int
 main(int argc, char **args)
@@ -62,12 +110,6 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	Buffer buf;
-	if (bopen(&buf, "test.txt") == -1) {
-		fprintf(stderr, "failed to create Buffer\n");
-		return 1;
-	}
-
 	Window win;
 	win_open(&win, "test.txt");
 	SDL_Rect rect = {0, 0, 1280, 720};
@@ -77,50 +119,14 @@ main(int argc, char **args)
 
 	running = true;
 	while (running) {
-		while (SDL_PollEvent(&e)) {
-			switch (e.type) {
-				case SDL_QUIT: {
-			      		running = false;
-			       	} break;
+		handle_events();
 
-				case SDL_TEXTINPUT: {
-					binserttext(&buf, e.text.text);
-			    	} break;
-
-				case SDL_KEYDOWN: {
-					switch (e.key.keysym.sym) {
-						case SDLK_UP:
-							bmoveu(&buf);
-							break;
-
-						case SDLK_DOWN:
-							bmoved(&buf);
-							break;
-
-						case SDLK_LEFT:
-							bmovel(&buf);
-							break;
-
-						case SDLK_RIGHT:
-							bmover(&buf);
-							break;
-
-						case SDLK_BACKSPACE:
-							bremove(&buf);
-							break;
-
-						case SDLK_RETURN:
-							binsert(&buf, '\n');
-							break;
-					}
-				} break;
-			}
-		}
+		update_mouse();
 
 		SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
 		SDL_RenderClear(renderer);
 
-		win_render(&win, renderer, rect);
+		win_render(&win, renderer, mouse, rect);
 
 		SDL_RenderPresent(renderer);
 	}

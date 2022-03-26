@@ -37,7 +37,7 @@ void win_open(Window *w, uint8_t *filename)
 	free(buffer);
 }
 
-void win_render(Window *win, SDL_Renderer *r, SDL_Rect pos)
+void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
 {
 	int font_height = get_font_height();
 	int font_width = get_font_height();
@@ -55,7 +55,7 @@ void win_render(Window *win, SDL_Renderer *r, SDL_Rect pos)
 
 	rect_content.x += font_width;
 	
-	gb_render(&win->content, r, rect_content, fg);
+	gb_render(&win->content, r, mouse, rect_content, fg);
 
 	// render the scrollbar
 	SDL_Rect rect_scroll = {pos.x, pos.y, font_width-5, pos.h};
@@ -73,7 +73,7 @@ void win_render(Window *win, SDL_Renderer *r, SDL_Rect pos)
 
 	rect_tag.x += font_width;
 
-	gb_render(&win->tag, r, rect_tag, fg);
+	gb_render(&win->tag, r, mouse, rect_tag, fg);
 	
 	// render the save button
 	SDL_Rect rect_button = {pos.x, pos.y, font_width-5, font_height};
