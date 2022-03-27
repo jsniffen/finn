@@ -43,6 +43,7 @@ SDL_Renderer *renderer;
 SDL_Event e;
 SDL_Texture *texture;
 SDL_Surface *surface;
+static Window win;
 static MouseInput mouse;
 bool running;
 
@@ -72,6 +73,9 @@ void handle_events()
 			} break;
 #endif
 
+			case SDL_TEXTINPUT: {
+				win_input(&win, e.text.text);
+			} break;
 		}
 	}
 }
@@ -110,7 +114,6 @@ main(int argc, char **args)
 		return 1;
 	}
 
-	Window win;
 	win_open(&win, "test.txt");
 	SDL_Rect rect = {0, 0, 1280, 720};
 

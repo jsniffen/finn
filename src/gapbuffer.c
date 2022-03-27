@@ -96,6 +96,7 @@ void gb_render(GapBuffer *gb, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos, S
 		SDL_Rect rect = {x, y, w, h};
 
 		if (SDL_PointInRect(&mouse.position, &rect) && lclick(mouse)) {
+
 			color.r = 255;
 
 			int gap = i;

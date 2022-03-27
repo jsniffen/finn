@@ -1,10 +1,21 @@
 typedef struct {
 	GapBuffer tag;
+	bool tag_active;
+
 	GapBuffer content;
+	bool content_active;
+
+	bool active;
+	bool dirty;
 } Window;
 
 void win_open(Window *w, uint8_t *filename)
 {
+	w->active = false;
+	w->content_active = false;
+	w->dirty = false;
+	w->tag_active = false;
+
 	gb_create(&w->tag, filename, strlen(filename));
 
 	int64_t size;
@@ -35,6 +46,22 @@ void win_open(Window *w, uint8_t *filename)
 
 	SDL_RWclose(file);
 	free(buffer);
+}
+
+void win_input(Window *w, char *text)
+{
+	char c;
+	if (w->content_active) {
+		while ((c = *text++) != '\0') {
+			gb_insert(&w->content, c);
+		}
+		w->dirty = true;
+	} else if (w->tag_active) {
+		while ((c = *text++) != '\0') {
+			gb_insert(&w->tag, c);
+		}
+		w->dirty = true;
+	}
 }
 
 void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
@@ -81,7 +108,13 @@ void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
 	SDL_SetRenderDrawColor(r, 136, 136, 204, 255);
 	SDL_RenderFillRect(r, &rect_button);
 
-	if (true) {
+	if (mouse.buttons[0].pressed) {
+		win->tag_active = SDL_PointInRect(&mouse.position, &rect_tag);
+		win->content_active = SDL_PointInRect(&mouse.position, &rect_content);
+		win->active = win->tag_active || win->content_active;
+	}
+
+	if (win->dirty) {
 		// render the dirty button
 		SDL_Rect rect_dirty = {pos.x+3, pos.y+3, font_width-11, font_height-6};
 
