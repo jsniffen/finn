@@ -54,7 +54,7 @@ void win_keydown(Window *w, uint32_t type)
 		return;
 	}
 
-	GapBuffer *gb = &w->content_active ? &w->content : &w->tag;
+	GapBuffer *gb = w->content_active ? &w->content : &w->tag;
 
 	switch (type) {
 		case SDLK_BACKSPACE: {
