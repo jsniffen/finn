@@ -11,8 +11,8 @@ typedef struct {
 
 void win_open(Window *w, uint8_t *filename)
 {
-	w->active = false;
-	w->content_active = false;
+	w->active = true;
+	w->content_active = true;
 	w->dirty = false;
 	w->tag_active = false;
 
@@ -46,6 +46,21 @@ void win_open(Window *w, uint8_t *filename)
 
 	SDL_RWclose(file);
 	free(buffer);
+}
+
+void win_keydown(Window *w, uint32_t type)
+{
+	if (!w->active) {
+		return;
+	}
+
+	GapBuffer *gb = &w->content_active ? &w->content : &w->tag;
+
+	switch (type) {
+		case SDLK_BACKSPACE: {
+			gb_remove(gb);
+		} break;
+	}
 }
 
 void win_input(Window *w, char *text)
@@ -82,12 +97,19 @@ void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
 
 	rect_content.x += font_width;
 	
-	gb_render(&win->content, r, mouse, rect_content, fg);
+	gb_render(&win->content, r, mouse, rect_content, fg, win->content_active);
 
 	// render the scrollbar
 	SDL_Rect rect_scroll = {pos.x, pos.y, font_width-5, pos.h};
 	SDL_SetRenderDrawColor(r, 153, 153, 76, 255);
 	SDL_RenderDrawRect(r, &rect_scroll);
+
+	int nlines = pos.h / font_height;
+	double scrollp = (double)nlines / (double)win->content.nlines;
+	int scrollh = scrollp*pos.h;
+
+	SDL_Rect rect_scrollbar = {rect_scroll.x, rect_scroll.y, rect_scroll.w, scrollh};
+	SDL_RenderFillRect(r, &rect_scrollbar);
 
 	// render the tag
 	SDL_Rect rect_tag = {pos.x, pos.y, pos.w, font_height};
@@ -100,7 +122,7 @@ void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
 
 	rect_tag.x += font_width;
 
-	gb_render(&win->tag, r, mouse, rect_tag, fg);
+	gb_render(&win->tag, r, mouse, rect_tag, fg, win->tag_active);
 	
 	// render the save button
 	SDL_Rect rect_button = {pos.x, pos.y, font_width-5, font_height};

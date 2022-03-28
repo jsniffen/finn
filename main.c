@@ -72,9 +72,12 @@ void handle_events()
 				update_mouse();
 			} break;
 #endif
-
 			case SDL_TEXTINPUT: {
 				win_input(&win, e.text.text);
+			} break;
+
+			case SDL_KEYDOWN: {
+				win_keydown(&win, e.key.keysym.sym);
 			} break;
 		}
 	}

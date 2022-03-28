@@ -1,12 +1,35 @@
 #define INITIAL_GAP_SIZE 256
+#define INITIAL_LINES_SIZE 256
 
 typedef struct
 {
 	uint64_t size;
 	uint64_t gap;
 	uint64_t gapsize;
+	uint32_t lines[INITIAL_LINES_SIZE];
+	uint32_t nlines;
 	uint8_t *data;
 } GapBuffer;
+
+void find_lines(GapBuffer *gb)
+{
+	gb->nlines = 0;
+
+	int i;
+	char c;
+
+	for (i = 0; i < gb->size; ++i) {
+		if (i == gb->gap) {
+			i += gb->gapsize;
+		}
+
+		c = gb->data[i];
+		if (c == '\n') {
+			gb->lines[gb->nlines++] = i;
+			++i;
+		}
+	}
+}
 
 void gb_create(GapBuffer *gb, uint8_t *data, uint64_t size)
 {
@@ -15,9 +38,14 @@ void gb_create(GapBuffer *gb, uint8_t *data, uint64_t size)
 	memset(gb->data, 0, INITIAL_GAP_SIZE);
 	memcpy(gb->data + INITIAL_GAP_SIZE, data, size);
 
+	memset(gb->lines, 0, INITIAL_LINES_SIZE);
+
 	gb->gap = 0;
 	gb->gapsize = INITIAL_GAP_SIZE;
 	gb->size = size + INITIAL_GAP_SIZE;
+
+	find_lines(gb);
+	printf("%d\n", gb->nlines);
 }
 
 void gb_delete(GapBuffer *gb)
@@ -66,7 +94,18 @@ void gb_movegap(GapBuffer *gb, uint64_t gap)
 	gb->gap = gap;
 }
 
-void gb_render(GapBuffer *gb, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos, SDL_Color fg)
+void gb_remove(GapBuffer *gb)
+{
+	if (gb->gap == 0) {
+		fprintf(stderr, "cannot backspace when the gap is at 0\n");
+		return;
+	}
+
+	--gb->gap;
+	++gb->gapsize;
+}
+
+void gb_render(GapBuffer *gb, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos, SDL_Color fg, bool active)
 {
 	int i, size, w, h, x, y;
 	char rune;
@@ -76,7 +115,9 @@ void gb_render(GapBuffer *gb, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos, S
 
 	for (i = 0; i < gb->size; ++i) {
 		if (i == gb->gap) {
-			render_cursor(r, x, y);
+			if (active) {
+				render_cursor(r, x, y);
+			}
 
 			i += gb->gapsize-1;
 			continue;
