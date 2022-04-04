@@ -48,6 +48,46 @@ void win_open(Window *w, uint8_t *filename)
 	free(buffer);
 }
 
+void win_write(Window *w)
+{
+	char buf[256];
+	int lsize, rsize;
+	char *lptr, *rptr;
+	GapBuffer *gb;
+
+	SDL_RWops *filename = SDL_RWFromMem(buf, 256);
+	if (filename) {
+		gb = &w->tag;
+		lsize = gb->gap;
+		rsize = gb->size - lsize - gb->gapsize;
+		lptr = gb->data;
+		rptr = gb->data + lsize + gb->gapsize;
+
+		SDL_RWwrite(filename, lptr, lsize, 1);
+		SDL_RWwrite(filename, rptr, rsize, 1);
+		SDL_RWclose(filename);
+
+		SDL_RWops *newfile = SDL_RWFromFile(buf, "w+b");
+		if (newfile) {
+			gb = &w->content;
+			lsize = gb->gap;
+			rsize = gb->size - lsize - gb->gapsize;
+			lptr = gb->data;
+			rptr = gb->data + lsize + gb->gapsize;
+
+			SDL_RWwrite(newfile, lptr, lsize, 1);
+			SDL_RWwrite(newfile, rptr, rsize, 1);
+			SDL_RWclose(newfile);
+
+			w->dirty = false;
+		} else {
+			fprintf(stderr, "Error opening file: %s\n", SDL_GetError());
+		}
+	} else {
+		fprintf(stderr, "Error opening file: %s\n", SDL_GetError());
+	}
+}
+
 void win_keydown(Window *w, uint32_t type)
 {
 	if (!w->active) {
@@ -131,6 +171,10 @@ void win_render(Window *win, SDL_Renderer *r, MouseInput mouse, SDL_Rect pos)
 	SDL_RenderFillRect(r, &rect_button);
 
 	if (mouse.buttons[0].pressed) {
+		if (SDL_PointInRect(&mouse.position, &rect_button)) {
+			win_write(win);
+		}
+
 		win->tag_active = SDL_PointInRect(&mouse.position, &rect_tag);
 		win->content_active = SDL_PointInRect(&mouse.position, &rect_content);
 		win->active = win->tag_active || win->content_active;
