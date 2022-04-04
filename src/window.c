@@ -50,6 +50,8 @@ void win_open(Window *w, uint8_t *filename)
 
 void win_write(Window *w)
 {
+	// TODO(Julian): You probably need to make sure that
+	// this string ends in a null terminator.
 	char buf[256];
 	int lsize, rsize;
 	char *lptr, *rptr;
