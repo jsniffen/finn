@@ -1,7 +1,44 @@
+static int term_width;
+static int term_height;
 
-int term_init();
+static struct cell *term_backbuffer;
+static struct cell *term_frontbuffer;
+
+int term_init_os();
 int term_get_size(int *w, int *h);
-int term_close();
+int term_close_os();
+
+int term_init()
+{
+	if (term_init_os()) {
+		if (term_get_size(&term_width, &term_height)) {
+			size_t size = sizeof(struct cell)*term_width*term_height;
+
+			term_backbuffer = (struct cell *)malloc(size);
+			memset(term_backbuffer, 0, size);
+
+			term_frontbuffer = (struct cell *)malloc(size);
+			memset(term_frontbuffer, 0, size);
+
+			return 1;
+		} else {
+			fprintf(stderr, "term_get_size failed\n");
+		}
+	} else {
+		fprintf(stderr, "term_init_os failed\n");
+	}
+	return 0;
+}
+
+int term_close()
+{
+	if (term_close_os()) {
+		return 1;
+	} else {
+		fprintf(stderr, "term_close_os failed\n");
+		return 0;
+	}
+}
 
 void term_hide_cursor()
 {
@@ -33,25 +70,37 @@ void term_reset()
 	fprintf(stdout, "\033[0m");
 }
 
-void term_render(struct cell *cells, int length)
+int term_setcell(int x, int y, struct cell c)
 {
-	int i;
-	struct color fg;
-	struct color bg;
+	if (x < 0 || y < 0 || x > term_width || y > term_height) {
+		return 0;
+	}
+	term_backbuffer[term_width*y + x] = c;
+	return 1;
+}
 
-	for (i = 0; i < length; ++i) {
-		struct cell cell = cells[i];
+void term_render()
+{
+	int y;
+	int x;
 
-		if (!color_equals(fg, cell.fg)) {
-			term_set_fg(cell.fg);
-			fg = cell.fg;
+	struct cell *frontbuffer = term_frontbuffer;
+	struct cell *backbuffer = term_backbuffer;
+
+	for (y = 0; y < term_height; ++y) {
+		for (x = 0; x < term_width; ++x) {
+			if (!cell_equals(*frontbuffer, *backbuffer)) {
+				term_move_cursor(x, y);
+
+				struct cell cell = *backbuffer;
+
+				term_set_fg(cell.fg);
+				term_set_bg(cell.bg);
+				fprintf(stdout, "%c", cell.c);
+			}
+
+			++frontbuffer;
+			++backbuffer;
 		}
-
-		if (!color_equals(bg, cell.bg)) {
-			term_set_bg(cell.bg);
-			bg = cell.bg;
-		}
-
-		fprintf(stdout, "%c", cell.c);
 	}
 }

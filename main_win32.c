@@ -1,12 +1,14 @@
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <synchapi.h>
 
 #include "color.c"
 #include "cell.c"
 #include "term.c"
+#include "finn.c"
 
-int term_init()
+int term_init_os()
 {
 	DWORD mode;
 
@@ -48,40 +50,12 @@ int term_get_size(int *w, int *h) {
 	return 1;
 }
 
-int term_close()
+int term_close_os()
 {
 	return 1;
 }
 
 int main()
 {
-	if (term_init()) {
-		term_hide_cursor();
-
-		int w, h;
-		if (term_get_size(&w, &h)) {
-			struct cell *cells = (struct cell*)malloc(w*h*sizeof(struct cell));
-			if (cells) {
-				memset(cells, 0, w*h*sizeof(struct cell));
-
-				int j;
-				for (j = 50; j < 1000; ++j) {
-					int i;
-					for (i = 0; i < w*h; ++i) {
-						cells[i].fg.r = j;
-						cells[i].c = 'x';
-					}
-					term_render(cells, w*h);
-				}
-			} else {
-				fprintf(stderr, "malloc failed\n");
-			}
-		}
-
-		term_show_cursor();
-		term_reset();
-		term_close();
-	} else {
-		fprintf(stderr, "term_init failed\n");
-	}
+	run();
 }
