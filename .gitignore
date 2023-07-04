@@ -1,4 +1,4 @@
-lib
-include
-bin
-test.txt
+*.exe
+*.ilk
+*.obj
+*.pdb

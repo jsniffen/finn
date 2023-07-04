@@ -75,11 +75,11 @@ void term_move_cursor(int x, int y) {
 }
 
 void term_set_fg(struct color color) {
-        fprintf(stdout, "\033[38;2;%d;%d;%dm", color.r, color.g, color.b);
+	fprintf(stdout, "\033[38;2;%d;%d;%dm", color.r, color.g, color.b);
 }
 
 void term_set_bg(struct color color) {
-        fprintf(stdout, "\033[48;2;%d;%d;%dm", color.r, color.g, color.b);
+	fprintf(stdout, "\033[48;2;%d;%d;%dm", color.r, color.g, color.b);
 }
 
 int term_get_size(int *w, int *h)
@@ -101,7 +101,7 @@ int term_get_size(int *w, int *h)
 }
 
 void term_reset() {
-        fprintf(stdout, "\033[0m");
+	fprintf(stdout, "\033[0m");
 }
 
 int term_close()
