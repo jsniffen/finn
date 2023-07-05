@@ -55,6 +55,16 @@ int term_close_os()
 	return 1;
 }
 
+int term_read_os(char *buf, int len, int *read)
+{
+	if (ReadFile(GetStdHandle(STD_INPUT_HANDLE), buf, len, read, 0)) {
+		return 1;
+	} else {
+		fprintf(stderr, "ReadFile failed\n");
+		return 0;
+	}
+}
+
 int main()
 {
 	run();

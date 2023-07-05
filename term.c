@@ -1,3 +1,17 @@
+enum key_code 
+{
+	key_up,
+	key_down,
+	key_left,
+	key_right,
+	key_backspace,
+};
+
+struct term_event
+{
+	enum key_code key_code;
+};
+
 static int term_width;
 static int term_height;
 
@@ -7,6 +21,7 @@ static struct cell *term_frontbuffer;
 int term_init_os();
 int term_get_size(int *w, int *h);
 int term_close_os();
+int term_read_os();
 
 int term_init()
 {
@@ -36,6 +51,33 @@ int term_close()
 		return 1;
 	} else {
 		fprintf(stderr, "term_close_os failed\n");
+		return 0;
+	}
+}
+
+int term_get_event(struct term_event *e)
+{
+	char buf[4];
+	int read;
+	if (term_read_os(buf, 4, &read)) {
+		if (read == 1) {
+			// e->c = buf[0];
+		} else if (read == 3) {
+			if (buf[0] == '\033' && buf[1] == '[') {
+				if (buf[2] == 'A') {
+					e->key_code = key_up;
+				} else if (buf[2] == 'B') {
+					e->key_code = key_down;
+				} else if (buf[2] == 'C') {
+					e->key_code = key_right;
+				} else if (buf[2] == 'D') {
+					e->key_code = key_left;
+				}
+			}
+		}
+		return 1;
+	} else {
+		fprintf(stderr, "term_read_os failed\n");
 		return 0;
 	}
 }
