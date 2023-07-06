@@ -6,6 +6,7 @@
 #include "color.c"
 #include "cell.c"
 #include "term.c"
+#include "gap_buffer.c"
 #include "finn.c"
 
 int term_init_os()

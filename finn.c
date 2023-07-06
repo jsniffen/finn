@@ -47,6 +47,21 @@ void render_status_bar()
 
 void run()
 {
+
+	struct gap_buffer gb;
+	gb_new(&gb, 1024);
+	gb_insert(&gb, 'h');
+	gb_insert(&gb, 'e');
+	gb_insert(&gb, 'l');
+	gb_insert(&gb, 'l');
+	gb_insert(&gb, 'o');
+	gb_insert(&gb, '\n');
+	gb_insert(&gb, 'w');
+	gb_insert(&gb, 'o');
+	gb_insert(&gb, 'r');
+	gb_insert(&gb, 'l');
+	gb_insert(&gb, 'd');
+
 	if (term_init()) {
 		term_hide_cursor();
 
@@ -66,6 +81,7 @@ void run()
 				}
 			}
 
+			gb_render(&gb);
 			render_status_bar();
 
 			term_render();
