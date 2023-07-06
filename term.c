@@ -94,7 +94,7 @@ void term_show_cursor()
 
 void term_move_cursor(int x, int y)
 {
-	fprintf(stdout, "\033[%d;%dH", x, y);
+	fprintf(stdout, "\033[%d;%dH", y+1, x+1);
 }
 
 void term_set_fg(struct color color)
@@ -114,7 +114,7 @@ void term_reset()
 
 int term_setcell(int x, int y, struct cell c)
 {
-	if (x < 0 || y < 0 || x > term_width || y > term_height) {
+	if (x < 0 || y < 0 || x > term_width-1 || y > term_height-1) {
 		return 0;
 	}
 	term_backbuffer[term_width*y + x] = c;
@@ -145,4 +145,14 @@ void term_render()
 			++backbuffer;
 		}
 	}
+}
+
+int term_get_height()
+{
+	return term_height;
+}
+
+int term_get_width()
+{
+	return term_width;
 }

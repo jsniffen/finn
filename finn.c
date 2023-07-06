@@ -1,3 +1,50 @@
+char insert_string[6] = {'I', 'N', 'S', 'E', 'R', 'T'};
+char normal_string[6] = {'N', 'O', 'R', 'M', 'A', 'L'};
+char visual_string[6] = {'V', 'I', 'S', 'U', 'A', 'L'};
+
+enum finn_mode
+{
+	mode_insert,
+	mode_normal,
+	mode_visual,
+};
+
+static enum finn_mode finn_mode;
+
+void render_status_bar()
+{
+	int y = term_get_height()-1;
+
+	struct cell cell = {
+		.bg = {
+			.r = 0,
+			.g = 0,
+			.b = 255,
+		},
+		.fg = {
+			.r = 255,
+			.g = 255,
+			.b = 255,
+		},
+		.c = ' ',
+	};
+
+	for (int x = 0; x < term_get_width(); ++x) {
+		if (x < 6) {
+			if (finn_mode == mode_insert) {
+				cell.c = insert_string[x];
+			} else if (finn_mode == mode_normal) {
+				cell.c = normal_string[x];
+			} else if (finn_mode == mode_visual) {
+				cell.c = visual_string[x];
+			}
+		} else {
+			cell.c = ' ';
+		}
+		term_setcell(x, y, cell);
+	}
+}
+
 void run()
 {
 	if (term_init()) {
@@ -11,30 +58,17 @@ void run()
 
 			if (term_get_event(&e)) {
 				if (e.key_code == key_left) {
-					c = 'h';
-				} else {
-					c = 'l';
+					finn_mode = mode_insert;
+				} else if (e.key_code == key_up) {
+					finn_mode = mode_normal;
+				} else if (e.key_code == key_right) {
+					finn_mode = mode_visual;
 				}
 			}
 
-			for (i = 0; i < 10; ++i) {
-				struct cell cell = {
-					.bg = {
-						.r = 0,
-						.g = 0,
-						.b = 0,
-					},
-					.fg = {
-						.r = 255,
-						.g = 255,
-						.b = 255,
-					},
-					.c  = c,
-				};
+			render_status_bar();
 
-				term_setcell(i, i, cell);
-				term_render();
-			}
+			term_render();
 		}
 
 
