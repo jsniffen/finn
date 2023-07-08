@@ -1,4 +1,10 @@
-enum key_code 
+enum event_type
+{
+	event_symbol,
+	event_char,
+};
+
+enum key_symbol
 {
 	key_up,
 	key_down,
@@ -9,7 +15,12 @@ enum key_code
 
 struct term_event
 {
-	enum key_code key_code;
+	enum event_type type;
+	union
+	{
+		enum key_symbol symbol;
+		char code;
+	};
 };
 
 static int term_width;
@@ -61,17 +72,24 @@ int term_get_event(struct term_event *e)
 	int read;
 	if (term_read_os(buf, 4, &read)) {
 		if (read == 1) {
-			// e->c = buf[0];
+			if (buf[0] == 127) {
+				e->type = event_symbol;
+				e->symbol = key_backspace;
+			} else {
+				e->type = event_char;
+				e->code = buf[0];
+			}
 		} else if (read == 3) {
 			if (buf[0] == '\033' && buf[1] == '[') {
+				e->type = event_symbol;
 				if (buf[2] == 'A') {
-					e->key_code = key_up;
+					e->symbol = key_up;
 				} else if (buf[2] == 'B') {
-					e->key_code = key_down;
+					e->symbol = key_down;
 				} else if (buf[2] == 'C') {
-					e->key_code = key_right;
+					e->symbol = key_right;
 				} else if (buf[2] == 'D') {
-					e->key_code = key_left;
+					e->symbol = key_left;
 				}
 			}
 		}

@@ -43,11 +43,8 @@ void gb_delete(struct gap_buffer *gb)
 	}
 }
 
-void gb_render(struct gap_buffer *gb)
+void gb_render(struct gap_buffer *gb, struct bbox bbox)
 {
-	int y = 0;
-	int x = 0;
-
 	struct cell cell = {
 		.bg = {
 			.r = 0,
@@ -61,6 +58,16 @@ void gb_render(struct gap_buffer *gb)
 		},
 		.c = ' ',
 	};
+
+	int i = 0;
+	for (int y = bbox.y; y < bbox.y + bbox.h; ++y) {
+		for (int x = bbox.x; x < bbox.x + bbox.w; ++x) {
+			term_setcell(x, y, cell);
+		}
+	}
+
+	int x = 0;
+	int y = 0;
 
 	for (int i = 0; i < gb->size; ++i) {
 		if (i == gb->cursor) {

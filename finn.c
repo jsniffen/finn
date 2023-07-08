@@ -72,16 +72,24 @@ void run()
 		while (1) {
 
 			if (term_get_event(&e)) {
-				if (e.key_code == key_left) {
-					finn_mode = mode_insert;
-				} else if (e.key_code == key_up) {
-					finn_mode = mode_normal;
-				} else if (e.key_code == key_right) {
-					finn_mode = mode_visual;
+				if (e.type == event_symbol) {
+					if (e.symbol == key_backspace) {
+						gb_delete(&gb);
+					} else if (e.symbol == key_left) {
+						finn_mode = mode_insert;
+					} else if (e.symbol == key_up) {
+						finn_mode = mode_normal;
+					} else if (e.symbol == key_right) {
+						finn_mode = mode_visual;
+					}
+				} else {
+					gb_insert(&gb, e.code);
 				}
 			}
 
-			gb_render(&gb);
+
+			struct bbox bbox = {0, 0, 100, 100};
+			gb_render(&gb, bbox);
 			render_status_bar();
 
 			term_render();
